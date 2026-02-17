@@ -1,0 +1,633 @@
+
+<!doctype html>
+<html lang="id" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoDrone Command Center</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Space Grotesk", "sans-serif"],
+            },
+            colors: {
+              dark: {
+                900: "#0b0e14",
+                800: "#151a23",
+                700: "#1e2532",
+              },
+              neon: {
+                blue: "#00f0ff",
+                purple: "#bc13fe",
+                green: "#0aff68",
+                orange: "#ff9900",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      :root {
+        --bg-color: #f1f5f9;
+        --card-glass: rgba(255, 255, 255, 0.7);
+        --card-border: rgba(0, 0, 0, 0.05);
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --accent-main: #0ea5e9; /* Sky 500 */
+      }
+
+      .dark {
+        --bg-color: #0b0e14;
+        --card-glass: rgba(21, 26, 35, 0.6);
+        --card-border: rgba(255, 255, 255, 0.05);
+        --text-primary: #e2e8f0;
+        --text-secondary: #94a3b8;
+        --accent-main: #00f0ff; /* Neon Blue */
+      }
+
+      body {
+        background-color: var(--bg-color);
+        color: var(--text-primary);
+        transition:
+          background-color 0.3s ease,
+          color 0.3s ease;
+      }
+
+      /* Ambient Backgrounds */
+      body.dark {
+        background-image:
+          radial-gradient(
+            circle at 10% 20%,
+            rgba(0, 240, 255, 0.05) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 90% 80%,
+            rgba(188, 19, 254, 0.05) 0%,
+            transparent 40%
+          );
+      }
+      body:not(.dark) {
+        background-image:
+          radial-gradient(
+            circle at 10% 20%,
+            rgba(14, 165, 233, 0.05) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 90% 80%,
+            rgba(99, 102, 241, 0.05) 0%,
+            transparent 40%
+          );
+      }
+
+      /* Bento Grid */
+      .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(auto, auto);
+        gap: 1.5rem;
+      }
+
+      /* Card Styles */
+      .glass-card {
+        background: var(--card-glass);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      }
+
+      .dark .glass-card:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        transform: translateY(-2px);
+      }
+
+      .glass-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Tech Bolder Lines */
+      .tech-border::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 20px;
+        height: 20px;
+        border-right: 2px solid var(--text-secondary);
+        border-bottom: 2px solid var(--text-secondary);
+        opacity: 0.3;
+        border-radius: 0 0 10px 0;
+      }
+
+      /* Layout Responsive Overrides */
+      @media (max-width: 1024px) {
+        .bento-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .col-span-2,
+        .col-span-3 {
+          grid-column: span 2 !important;
+        }
+      }
+      @media (max-width: 640px) {
+        .bento-grid {
+          grid-template-columns: 1fr;
+        }
+        .col-span-1,
+        .col-span-2,
+        .col-span-3,
+        .row-span-2 {
+          grid-column: span 1 !important;
+          grid-row: span 1 !important;
+        }
+      }
+
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen p-4 md:p-6 lg:p-8 transition-colors duration-300">
+    <!-- Top Bar -->
+    <header class="flex justify-between items-center mb-8 px-2">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 rounded-lg flex items-center justify-center border transition-colors dark:bg-neon-blue/10 dark:border-neon-blue/20 bg-sky-100 border-sky-200"
+        >
+          <i class="fa-solid fa-drone dark:text-neon-blue text-sky-600"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight">MISSION CONTROL</h1>
+          <div class="flex items-center gap-2 text-xs opacity-70">
+            <span
+              class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
+            ></span>
+            SYSTEM ONLINE • <span id="clock" class="font-mono">00:00:00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-4">
+        <!-- Theme Toggle -->
+        <button
+          onclick="toggleTheme()"
+          class="glass-card !p-5 !rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"
+          title="Toggle Theme"
+        >
+          <i class="fa-solid fa-sun text-orange-400 dark:hidden"></i>
+          <i class="fa-solid fa-moon text-neon-blue hidden dark:block"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Bento Grid Layout -->
+    <div class="bento-grid max-w-7xl mx-auto">
+      <!-- 1. Global Chart (Wide - Top Left) -->
+      <div class="glass-card col-span-3 row-span-2 flex flex-col min-h-[400px]">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="opacity-60 text-sm uppercase flex items-center gap-2">
+            <span
+              class="w-2 h-2 rounded-full dark:bg-neon-blue bg-sky-500"
+              id="live-indicator"
+            ></span>
+            <span id="chart-title">Live Telemetry</span>
+          </h3>
+          <div class="flex bg-black/5 dark:bg-white/5 p-1 rounded-lg">
+            <button
+              onclick="setMode('minute')"
+              id="btn-minute"
+              class="px-4 py-1.5 text-xs rounded-md transition-all font-medium dark:bg-neon-blue dark:text-black bg-sky-500 text-white shadow-lg"
+            >
+              Minute
+            </button>
+            <button
+              onclick="setMode('hour')"
+              id="btn-hour"
+              class="px-4 py-1.5 text-xs rounded-md transition-all font-medium opacity-60 hover:opacity-100"
+            >
+              Hour
+            </button>
+            <button
+              onclick="setMode('day')"
+              id="btn-day"
+              class="px-4 py-1.5 text-xs rounded-md transition-all font-medium opacity-60 hover:opacity-100"
+            >
+              Day
+            </button>
+          </div>
+        </div>
+        <div class="relative flex-grow w-full">
+          <canvas id="mainChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 2. Connection / Logs (Top Right) -->
+      <div class="glass-card col-span-1 row-span-2 flex flex-col min-h-[400px]">
+        <h3
+          class="opacity-60 text-sm uppercase mb-3 text-xs tracking-wider border-b dark:border-white/5 border-black/5 pb-2"
+        >
+          Recent Logs
+        </h3>
+        <div
+          class="space-y-4 font-mono text-xs overflow-y-auto no-scrollbar flex-grow p-1"
+        >
+          <div class="flex flex-col gap-1 opacity-80">
+            <div class="flex justify-between">
+              <span class="dark:text-neon-blue text-sky-600 font-bold"
+                >[INFO]</span
+              >
+              <span class="opacity-50 text-[10px]">08:42:01</span>
+            </div>
+            <span>Data stream frequency adjusted to 1Hz.</span>
+          </div>
+          <div
+            class="flex flex-col gap-1 opacity-80 border-t dark:border-white/5 border-black/5 pt-2"
+          >
+            <div class="flex justify-between">
+              <span class="text-green-500 font-bold">[SUCCESS]</span>
+              <span class="opacity-50 text-[10px]">08:41:55</span>
+            </div>
+            <span>Water Sample #402 Analyzed. Details uploaded.</span>
+          </div>
+          <div
+            class="flex flex-col gap-1 opacity-80 border-t dark:border-white/5 border-black/5 pt-2"
+          >
+            <div class="flex justify-between">
+              <span class="dark:text-neon-orange text-orange-500 font-bold"
+                >[WARN]</span
+              >
+              <span class="opacity-50 text-[10px]">08:40:12</span>
+            </div>
+            <span>Wind gust detected (14m/s). Stabilizing...</span>
+          </div>
+          <div
+            class="flex flex-col gap-1 opacity-80 border-t dark:border-white/5 border-black/5 pt-2"
+          >
+            <div class="flex justify-between">
+              <span class="dark:text-neon-purple text-purple-500 font-bold"
+                >[SYS]</span
+              >
+              <span class="opacity-50 text-[10px]">08:39:20</span>
+            </div>
+            <span>Battery efficiency computed.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Water Quality -->
+      <div
+        class="glass-card col-span-1 flex flex-col items-center justify-center text-center tech-border min-h-[250px] group"
+      >
+        <div
+          class="w-12 h-12 rounded-full dark:bg-sky-500/10 bg-sky-100 flex items-center justify-center dark:text-sky-400 text-sky-600 border dark:border-sky-500/20 border-sky-200 transition-colors mb-4 group-hover:scale-110 duration-300"
+        >
+          <i class="fa-solid fa-droplet text-xl"></i>
+        </div>
+        <h3 class="opacity-60 text-sm uppercase mb-1">Water pH</h3>
+        <div
+          id="val-water"
+          class="text-6xl font-bold dark:text-white text-slate-800 tracking-tight"
+        >
+          --
+        </div>
+        <div class="text-sm font-medium dark:text-sky-400 text-sky-600 mt-2">
+          Normal
+        </div>
+      </div>
+
+      <!-- 4. Air Quality -->
+      <div
+        class="glass-card col-span-1 flex flex-col items-center justify-center text-center tech-border min-h-[250px] group"
+      >
+        <div
+          class="w-12 h-12 rounded-full dark:bg-green-500/10 bg-green-100 flex items-center justify-center dark:text-green-400 text-green-600 border dark:border-green-500/20 border-green-200 transition-colors mb-4 group-hover:scale-110 duration-300"
+        >
+          <i class="fa-solid fa-wind text-xl"></i>
+        </div>
+        <h3 class="opacity-60 text-sm uppercase mb-1">Air Quality</h3>
+        <div
+          id="val-air"
+          class="text-6xl font-bold dark:text-white text-slate-800 tracking-tight"
+        >
+          --
+        </div>
+        <div
+          class="text-sm font-medium dark:text-green-400 text-green-600 mt-2"
+        >
+          AQI (Good)
+        </div>
+      </div>
+
+      <!-- 5. Soil Moisture -->
+      <div
+        class="glass-card col-span-1 flex flex-col items-center justify-center text-center tech-border min-h-[250px] group"
+      >
+        <div
+          class="w-12 h-12 rounded-full dark:bg-orange-500/10 bg-orange-100 flex items-center justify-center dark:text-orange-400 text-orange-600 border dark:border-orange-500/20 border-orange-200 transition-colors mb-4 group-hover:scale-110 duration-300"
+        >
+          <i class="fa-solid fa-layer-group text-xl"></i>
+        </div>
+        <h3 class="opacity-60 text-sm uppercase mb-1">Soil Moisture</h3>
+        <div
+          class="text-6xl font-bold dark:text-white text-slate-800 tracking-tight"
+        >
+          <span id="val-soil">--</span
+          ><span class="text-2xl align-top opacity-50 ml-1">%</span>
+        </div>
+        <div
+          class="text-sm font-medium dark:text-orange-400 text-orange-600 mt-2"
+        >
+          Optimal
+        </div>
+      </div>
+
+      <!-- 6. Energy -->
+      <div
+        class="glass-card col-span-1 flex flex-col items-center justify-center text-center tech-border min-h-[250px] group"
+      >
+        <div
+          class="w-12 h-12 rounded-full dark:bg-purple-500/10 bg-purple-100 flex items-center justify-center dark:text-purple-400 text-purple-600 border dark:border-purple-500/20 border-purple-200 transition-colors mb-4 group-hover:scale-110 duration-300"
+        >
+          <i class="fa-solid fa-bolt text-xl"></i>
+        </div>
+        <h3 class="opacity-60 text-sm uppercase mb-1">Energy Load</h3>
+        <div
+          class="text-6xl font-bold dark:text-white text-slate-800 tracking-tight"
+        >
+          <span id="val-energy">--</span
+          ><span class="text-2xl align-top opacity-50 ml-1">W</span>
+        </div>
+        <div
+          class="text-sm font-medium dark:text-purple-400 text-purple-600 mt-2"
+        >
+          Battery: 82%
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- CLOCK ---
+      function updateTime() {
+        const now = new Date();
+        document.getElementById("clock").innerText = now.toLocaleTimeString(
+          "en-US",
+          { hour12: false },
+        );
+      }
+      setInterval(updateTime, 1000);
+      updateTime();
+
+      // --- THEME ---
+      function toggleTheme() {
+        document.documentElement.classList.toggle("dark");
+        setMode(currentMode);
+      }
+
+      // --- CHARTS & DATA ---
+      let chartMain;
+      let updateInterval;
+      let currentMode = "minute";
+      const ctxMain = document.getElementById("mainChart").getContext("2d");
+
+      const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            display: true,
+            grid: { display: false },
+            ticks: { color: "#64748b", font: { size: 10 } },
+          },
+          y: { display: false },
+        },
+        elements: { point: { radius: 0, hoverRadius: 6 } },
+        interaction: { mode: "index", intersect: false },
+      };
+
+      function setMode(mode) {
+        currentMode = mode;
+
+        // Buttons UI
+        document
+          .querySelectorAll("#btn-minute, #btn-hour, #btn-day")
+          .forEach((btn) => {
+            btn.className =
+              "px-4 py-1.5 text-xs rounded-md transition-all font-medium opacity-60 hover:opacity-100";
+          });
+
+        // Active state classes
+        const activeClass =
+          "px-4 py-1.5 text-xs rounded-md transition-all font-medium bg-sky-500 text-white shadow-lg opacity-100 dark:bg-neon-blue dark:text-black";
+        document.getElementById(`btn-${mode}`).className = activeClass;
+
+        // Indicator Logic
+        const indicator = document.getElementById("live-indicator");
+        const title = document.getElementById("chart-title");
+
+        if (mode === "minute") {
+          indicator.className =
+            "w-2 h-2 rounded-full animate-pulse bg-sky-500 dark:bg-neon-blue";
+          title.innerText = "Live Telemetry (Real-time)";
+        } else {
+          indicator.className = "w-2 h-2 rounded-full bg-gray-400";
+          title.innerText = mode === "hour" ? "Hourly Trend" : "Daily Trend";
+        }
+
+        renderChart();
+      }
+
+      function getDataForMode(mode) {
+        if (mode === "minute") {
+          // Return 20 points for last 20 seconds
+          return {
+            labels: Array.from({ length: 20 }, (_, i) => `${20 - i}s`),
+            data: Array.from({ length: 20 }, () =>
+              Math.floor(Math.random() * 30 + 100),
+            ),
+          };
+        } else if (mode === "hour") {
+          // Return 12 points (every 5 mins)
+          return {
+            labels: [
+              "00",
+              "05",
+              "10",
+              "15",
+              "20",
+              "25",
+              "30",
+              "35",
+              "40",
+              "45",
+              "50",
+              "55",
+            ],
+            data: [120, 135, 125, 140, 150, 145, 130, 125, 135, 145, 155, 148],
+          };
+        } else {
+          // Return 7 points (days)
+          return {
+            labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            data: [110, 140, 135, 120, 150, 160, 145],
+          };
+        }
+      }
+
+      function renderChart() {
+        if (chartMain) chartMain.destroy();
+        clearInterval(updateInterval);
+
+        const isDark = document.documentElement.classList.contains("dark");
+        const color = isDark ? "#00f0ff" : "#0ea5e9";
+
+        const gradientMain = ctxMain.createLinearGradient(0, 0, 0, 400);
+        gradientMain.addColorStop(
+          0,
+          isDark ? "rgba(0, 240, 255, 0.4)" : "rgba(14, 165, 233, 0.4)",
+        );
+        gradientMain.addColorStop(
+          1,
+          isDark ? "rgba(0, 240, 255, 0)" : "rgba(14, 165, 233, 0)",
+        );
+
+        const initialData = getDataForMode(currentMode);
+
+        chartMain = new Chart(ctxMain, {
+          type: "line",
+          data: {
+            labels: initialData.labels,
+            datasets: [
+              {
+                data: initialData.data,
+                borderColor: color,
+                backgroundColor: gradientMain,
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+              },
+            ],
+          },
+          options: {
+            ...commonOptions,
+            scales: {
+              x: {
+                display: true,
+                grid: { display: false },
+                ticks: { color: isDark ? "#64748b" : "#94a3b8" },
+              },
+              y: { display: false },
+            },
+          },
+        });
+
+        // If minute mode, simulation is replaced by real API data polling elsewhere
+        if (currentMode === "minute") {
+          // No internal simulation. Driven by fetchLatestData()
+        }
+      }
+
+      // Init
+      document.addEventListener("DOMContentLoaded", () => {
+        // Force dark mode start
+        document.documentElement.classList.add("dark");
+        setMode("minute");
+
+        // Start polling data
+        setInterval(fetchLatestData, 2000); // Poll every 2 seconds
+        fetchLatestData(); // Initial fetch
+      });
+
+      async function fetchLatestData() {
+        try {
+          const response = await fetch("api.php?get_latest=true");
+          const data = await response.json();
+
+          if (data.status === "empty" || data.status === "error") {
+            console.warn("No data or error:", data.message);
+            return;
+          }
+
+          // Update Values
+          // Assuming API returns keys: kualitas_air, udara, tahan, daya_listrik
+          if (data.kualitas_air !== undefined)
+            document.getElementById("val-water").innerText = parseFloat(
+              data.kualitas_air,
+            ).toFixed(1);
+          if (data.udara !== undefined)
+            document.getElementById("val-air").innerText = parseFloat(
+              data.udara,
+            ).toFixed(0);
+          if (data.tahan !== undefined)
+            document.getElementById("val-soil").innerText = parseFloat(
+              data.tahan,
+            ).toFixed(0);
+          if (data.daya_listrik !== undefined)
+            document.getElementById("val-energy").innerText = parseFloat(
+              data.daya_listrik,
+            ).toFixed(0);
+
+          // Update Chart (Live Mode)
+          if (currentMode === "minute" && chartMain) {
+            const chartData = chartMain.data.datasets[0].data;
+            chartData.shift();
+            // Use one of the values for the main chart, e.g., Water Quality or aggregate
+            // Let's visualize Water Quality on the main chart for now, or just random as fallback
+            // Better to visualize one metric. Let's use 'kualitas_air' * 10 or similar if needed,
+            // but let's stick to valid range.
+            // The previous random was roughly 100-130.
+            // Let's just use 'daya_listrik' as it might be fluctuating more or just use the random
+            // simulation but seeded with real activity if we want real history.
+            // For now, let's keep the random simulation in the chart to avoid flatlining if data comes slowly,
+            // OR better: push the real value if available.
+
+            // Let's use Energy Load for the live chart
+            chartData.push(
+              data.daya_listrik ? parseFloat(data.daya_listrik) : 0,
+            );
+            chartMain.update("none");
+          }
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      }
+    </script>
+  </body>
+</html>
