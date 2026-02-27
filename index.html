@@ -594,7 +594,7 @@
         // Fetch Reports
         async function fetchReports(period = 'daily') {
             try {
-                const response = await fetch(`http://fauzan.underwaterdrone.my.id/api.php?get_reports=true&period=${period}`);
+                const response = await fetch(`api.php?get_reports=true&period=${period}`, { cache: 'no-store' });
                 const result = await response.json();
 
                 if (result.status === "success") {
@@ -678,10 +678,10 @@
 
         // Initialize
         initChart();
-        testConnection(); // Test API dulu
+        testConnection();
         fetchData();
         fetchReports();
-        setInterval(fetchData, 5000); // Coba setiap 5 detik
+        setInterval(fetchData, 5000);  // polling tiap 5 detik
         setInterval(() => fetchReports(document.querySelector('select')?.value || 'daily'), 30000);
     </script>
 </body>
