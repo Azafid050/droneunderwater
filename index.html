@@ -1,633 +1,830 @@
+<!DOCTYPE html>
+<html lang="id">
 
-<!doctype html>
-<html lang="id" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EcoDrone Command Center</title>
-
-    <!-- Tailwind CSS -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHRONO</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- Icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ["Space Grotesk", "sans-serif"],
-            },
-            colors: {
-              dark: {
-                900: "#0b0e14",
-                800: "#151a23",
-                700: "#1e2532",
-              },
-              neon: {
-                blue: "#00f0ff",
-                purple: "#bc13fe",
-                green: "#0aff68",
-                orange: "#ff9900",
-              },
-            },
-          },
-        },
-      };
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#0a192f',
+                            card: '#112240',
+                            border: '#1e2d4a',
+                            accent: '#64ffda'
+                        }
+                    }
+                }
+            }
+        }
     </script>
     <style>
-      :root {
-        --bg-color: #f1f5f9;
-        --card-glass: rgba(255, 255, 255, 0.7);
-        --card-border: rgba(0, 0, 0, 0.05);
-        --text-primary: #1e293b;
-        --text-secondary: #64748b;
-        --accent-main: #0ea5e9; /* Sky 500 */
-      }
-
-      .dark {
-        --bg-color: #0b0e14;
-        --card-glass: rgba(21, 26, 35, 0.6);
-        --card-border: rgba(255, 255, 255, 0.05);
-        --text-primary: #e2e8f0;
-        --text-secondary: #94a3b8;
-        --accent-main: #00f0ff; /* Neon Blue */
-      }
-
-      body {
-        background-color: var(--bg-color);
-        color: var(--text-primary);
-        transition:
-          background-color 0.3s ease,
-          color 0.3s ease;
-      }
-
-      /* Ambient Backgrounds */
-      body.dark {
-        background-image:
-          radial-gradient(
-            circle at 10% 20%,
-            rgba(0, 240, 255, 0.05) 0%,
-            transparent 40%
-          ),
-          radial-gradient(
-            circle at 90% 80%,
-            rgba(188, 19, 254, 0.05) 0%,
-            transparent 40%
-          );
-      }
-      body:not(.dark) {
-        background-image:
-          radial-gradient(
-            circle at 10% 20%,
-            rgba(14, 165, 233, 0.05) 0%,
-            transparent 40%
-          ),
-          radial-gradient(
-            circle at 90% 80%,
-            rgba(99, 102, 241, 0.05) 0%,
-            transparent 40%
-          );
-      }
-
-      /* Bento Grid */
-      .bento-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        grid-template-rows: repeat(auto, auto);
-        gap: 1.5rem;
-      }
-
-      /* Card Styles */
-      .glass-card {
-        background: var(--card-glass);
-        backdrop-filter: blur(12px);
-        border: 1px solid var(--card-border);
-        border-radius: 24px;
-        padding: 1.5rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      }
-
-      .dark .glass-card:hover {
-        border-color: rgba(255, 255, 255, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-        transform: translateY(-2px);
-      }
-
-      .glass-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-      }
-
-      /* Tech Bolder Lines */
-      .tech-border::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 20px;
-        height: 20px;
-        border-right: 2px solid var(--text-secondary);
-        border-bottom: 2px solid var(--text-secondary);
-        opacity: 0.3;
-        border-radius: 0 0 10px 0;
-      }
-
-      /* Layout Responsive Overrides */
-      @media (max-width: 1024px) {
-        .bento-grid {
-          grid-template-columns: repeat(2, 1fr);
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
-        .col-span-2,
-        .col-span-3 {
-          grid-column: span 2 !important;
-        }
-      }
-      @media (max-width: 640px) {
-        .bento-grid {
-          grid-template-columns: 1fr;
-        }
-        .col-span-1,
-        .col-span-2,
-        .col-span-3,
-        .row-span-2 {
-          grid-column: span 1 !important;
-          grid-row: span 1 !important;
-        }
-      }
 
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
+        .animate-pulse-soft {
+            animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .glass {
+            background: rgba(17, 34, 64, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .dark .glass {
+            background: rgba(10, 25, 47, 0.8);
+            border: 1px solid rgba(100, 255, 218, 0.15);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a192f;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #64ffda;
+            border-radius: 10px;
+        }
+
+        .tab-active {
+            color: #64ffda;
+            border-bottom: 2px solid #64ffda;
+        }
+
+        .sensor-card {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sensor-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .sensor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+        }
+
+        .card-ph::before {
+            background: linear-gradient(to right, #2196f3, #64ffda);
+        }
+
+        .card-turbidity::before {
+            background: linear-gradient(to right, #4caf50, #64ffda);
+        }
+
+        .card-temperature::before {
+            background: linear-gradient(to right, #ff9800, #64ffda);
+        }
+
+        .card-oxygen::before {
+            background: linear-gradient(to right, #f44336, #64ffda);
+        }
+
+        .alert {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.5s ease;
+        }
+
+        .alert-warning {
+            background: rgba(255, 152, 0, 0.15);
+            color: #ff9800;
+            border-left: 4px solid #ff9800;
+        }
+
+        .alert-danger {
+            background: rgba(244, 67, 54, 0.15);
+            color: #f44336;
+            border-left: 4px solid #f44336;
+        }
+
+        .alert-success {
+            background: rgba(76, 175, 80, 0.15);
+            color: #4caf50;
+            border-left: 4px solid #4caf50;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
     </style>
-  </head>
-  <body class="min-h-screen p-4 md:p-6 lg:p-8 transition-colors duration-300">
-    <!-- Top Bar -->
-    <header class="flex justify-between items-center mb-8 px-2">
-      <div class="flex items-center gap-3">
-        <div
-          class="w-10 h-10 rounded-lg flex items-center justify-center border transition-colors dark:bg-neon-blue/10 dark:border-neon-blue/20 bg-sky-100 border-sky-200"
-        >
-          <i class="fa-solid fa-drone dark:text-neon-blue text-sky-600"></i>
-        </div>
-        <div>
-          <h1 class="text-2xl font-bold tracking-tight">MISSION CONTROL</h1>
-          <div class="flex items-center gap-2 text-xs opacity-70">
-            <span
-              class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
-            ></span>
-            SYSTEM ONLINE • <span id="clock" class="font-mono">00:00:00</span>
-          </div>
-        </div>
-      </div>
+</head>
 
-      <div class="flex gap-4">
-        <!-- Theme Toggle -->
-        <button
-          onclick="toggleTheme()"
-          class="glass-card !p-5 !rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"
-          title="Toggle Theme"
-        >
-          <i class="fa-solid fa-sun text-orange-400 dark:hidden"></i>
-          <i class="fa-solid fa-moon text-neon-blue hidden dark:block"></i>
-        </button>
-      </div>
+<body class="bg-brand-dark text-slate-100 min-h-screen font-sans transition-colors duration-300">
+
+    <!-- Header -->
+    <header class="border-b border-brand-border sticky top-0 z-50 glass">
+        <div class="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex flex-col">
+                <h1 class="text-xl font-bold tracking-wider leading-none text-brand-accent">SE - PHON 32</h1>
+                <p class="text-[10px] text-zinc-400 font-semibold tracking-widest mt-1 uppercase">Underwater Drone - Real-time Water Quality Monitoring</p>
+            </div>
+
+            <div class="flex items-center gap-8">
+                <!-- Connection Status -->
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-soft" id="connection-status"></div>
+                    <span id="connection-text" class="text-xs font-medium text-zinc-400">Koneksi Drone: Stabil</span>
+                </div>
+
+                <!-- Clock -->
+                <div class="hidden md:flex flex-col items-end">
+                    <span class="text-[10px] font-bold text-zinc-500 uppercase">Live Update</span>
+                    <span id="clock" class="text-xl font-mono font-medium text-brand-accent">00:00:00</span>
+                </div>
+
+                <!-- Sync Status -->
+                <div class="flex flex-col items-end border-l border-brand-border pl-8">
+                    <span class="text-[10px] font-bold text-zinc-500 uppercase">Sync Status</span>
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-soft"></div>
+                        <span id="syncStatus" class="text-sm font-mono font-medium text-emerald-500 uppercase">Connected</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </header>
 
-    <!-- Bento Grid Layout -->
-    <div class="bento-grid max-w-7xl mx-auto">
-      <!-- 1. Global Chart (Wide - Top Left) -->
-      <div class="glass-card col-span-3 row-span-2 flex flex-col min-h-[400px]">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="opacity-60 text-sm uppercase flex items-center gap-2">
-            <span
-              class="w-2 h-2 rounded-full dark:bg-neon-blue bg-sky-500"
-              id="live-indicator"
-            ></span>
-            <span id="chart-title">Live Telemetry</span>
-          </h3>
-          <div class="flex bg-black/5 dark:bg-white/5 p-1 rounded-lg">
-            <button
-              onclick="setMode('minute')"
-              id="btn-minute"
-              class="px-4 py-1.5 text-xs rounded-md transition-all font-medium dark:bg-neon-blue dark:text-black bg-sky-500 text-white shadow-lg"
-            >
-              Minute
-            </button>
-            <button
-              onclick="setMode('hour')"
-              id="btn-hour"
-              class="px-4 py-1.5 text-xs rounded-md transition-all font-medium opacity-60 hover:opacity-100"
-            >
-              Hour
-            </button>
-            <button
-              onclick="setMode('day')"
-              id="btn-day"
-              class="px-4 py-1.5 text-xs rounded-md transition-all font-medium opacity-60 hover:opacity-100"
-            >
-              Day
-            </button>
-          </div>
-        </div>
-        <div class="relative flex-grow w-full">
-          <canvas id="mainChart"></canvas>
-        </div>
-      </div>
+    <!-- Alert Container -->
+    <div class="max-w-[1400px] mx-auto px-6 mt-4" id="alerts-container"></div>
 
-      <!-- 2. Connection / Logs (Top Right) -->
-      <div class="glass-card col-span-1 row-span-2 flex flex-col min-h-[400px]">
-        <h3
-          class="opacity-60 text-sm uppercase mb-3 text-xs tracking-wider border-b dark:border-white/5 border-black/5 pb-2"
-        >
-          Recent Logs
-        </h3>
-        <div
-          class="space-y-4 font-mono text-xs overflow-y-auto no-scrollbar flex-grow p-1"
-        >
-          <div class="flex flex-col gap-1 opacity-80">
-            <div class="flex justify-between">
-              <span class="dark:text-neon-blue text-sky-600 font-bold"
-                >[INFO]</span
-              >
-              <span class="opacity-50 text-[10px]">08:42:01</span>
+    <!-- Navigation Tabs -->
+    <nav class="max-w-[1400px] mx-auto px-6 mt-6">
+        <div class="flex gap-8 border-b border-brand-border">
+            <button onclick="switchTab('monitoring')" id="tab-monitoring"
+                class="pb-3 text-xs font-bold tracking-widest uppercase transition-all tab-active">Monitoring</button>
+            <button onclick="switchTab('reports')" id="tab-reports"
+                class="pb-3 text-xs font-bold tracking-widest uppercase transition-all text-zinc-500 hover:text-brand-accent">Reports</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-[1400px] mx-auto px-6 py-8">
+
+        <!-- Monitoring Section -->
+        <section id="section-monitoring" class="space-y-8 block">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- PH Card -->
+                <div class="sensor-card card-ph p-6 rounded-2xl bg-brand-card border border-brand-border group hover:border-brand-accent/50 transition-all duration-300 relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-vial text-cyan-400"></i>
+                            <h3 class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">pH Level</h3>
+                        </div>
+                        <span class="px-2 py-1 bg-cyan-500/10 text-cyan-400 text-[8px] font-black rounded-full border border-cyan-500/20 uppercase" id="ph-status">NORMAL</span>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-bold text-cyan-400 transition-all group-hover:scale-105" id="val-ph">7.2</span>
+                        <span class="text-zinc-500 text-sm">pH</span>
+                    </div>
+                    <div class="mt-4">
+                        <div class="w-full h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-cyan-500 to-brand-accent rounded-full" id="ph-bar" style="width: 65%;"></div>
+                        </div>
+                        <div class="flex justify-between mt-2 text-[10px] text-zinc-500">
+                            <span>Asam: 0</span>
+                            <span id="ph-percent">65%</span>
+                            <span>Basa: 14</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Water Turbidity Card -->
+                <div class="sensor-card card-turbidity p-6 rounded-2xl bg-brand-card border border-brand-border group hover:border-brand-accent/50 transition-all duration-300 relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-water text-green-400"></i>
+                            <h3 class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Kekeruhan</h3>
+                        </div>
+                        <span class="px-2 py-1 bg-green-500/10 text-green-400 text-[8px] font-black rounded-full border border-green-500/20 uppercase" id="turbidity-status">JERNIH</span>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-bold text-green-400 transition-all group-hover:scale-105" id="val-water">5.2</span>
+                        <span class="text-zinc-500 text-sm">NTU</span>
+                    </div>
+                    <div class="mt-4">
+                        <div class="w-full h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-green-500 to-brand-accent rounded-full" id="turbidity-bar" style="width: 15%;"></div>
+                        </div>
+                        <div class="flex justify-between mt-2 text-[10px] text-zinc-500">
+                            <span>Jernih: 0</span>
+                            <span id="turbidity-percent">15%</span>
+                            <span>Keruh: 100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Temperature Card -->
+                <div class="sensor-card card-temperature p-6 rounded-2xl bg-brand-card border border-brand-border group hover:border-brand-accent/50 transition-all duration-300 relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-thermometer-half text-orange-400"></i>
+                            <h3 class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Suhu Air</h3>
+                        </div>
+                        <span class="px-2 py-1 bg-orange-500/10 text-orange-400 text-[8px] font-black rounded-full border border-orange-500/20 uppercase" id="temperature-status">IDEAL</span>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-bold text-orange-400 transition-all group-hover:scale-105" id="val-temperature">24.5</span>
+                        <span class="text-zinc-500 text-sm">°C</span>
+                    </div>
+                    <div class="mt-4">
+                        <div class="w-full h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-orange-500 to-brand-accent rounded-full" id="temperature-bar" style="width: 45%;"></div>
+                        </div>
+                        <div class="flex justify-between mt-2 text-[10px] text-zinc-500">
+                            <span>Min: 15°C</span>
+                            <span id="temperature-percent">45%</span>
+                            <span>Max: 35°C</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Oxygen Card -->
+                <div class="sensor-card card-oxygen p-6 rounded-2xl bg-brand-card border border-brand-border group hover:border-brand-accent/50 transition-all duration-300 relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-lungs text-red-400"></i>
+                            <h3 class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Oksigen Terlarut</h3>
+                        </div>
+                        <span class="px-2 py-1 bg-red-500/10 text-red-400 text-[8px] font-black rounded-full border border-red-500/20 uppercase" id="oxygen-status">BAIK</span>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-bold text-red-400 transition-all group-hover:scale-105" id="val-oxygen">6.8</span>
+                        <span class="text-zinc-500 text-sm">mg/L</span>
+                    </div>
+                    <div class="mt-4">
+                        <div class="w-full h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-red-500 to-brand-accent rounded-full" id="oxygen-bar" style="width: 68%;"></div>
+                        </div>
+                        <div class="flex justify-between mt-2 text-[10px] text-zinc-500">
+                            <span>Rendah: 0</span>
+                            <span id="oxygen-percent">68%</span>
+                            <span>Tinggi: 14</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <span>Data stream frequency adjusted to 1Hz.</span>
-          </div>
-          <div
-            class="flex flex-col gap-1 opacity-80 border-t dark:border-white/5 border-black/5 pt-2"
-          >
-            <div class="flex justify-between">
-              <span class="text-green-500 font-bold">[SUCCESS]</span>
-              <span class="opacity-50 text-[10px]">08:41:55</span>
+
+            <!-- Drone Info Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Drone Status Card -->
+                <div class="p-6 rounded-2xl bg-brand-card border border-brand-border">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xs font-bold text-brand-accent uppercase tracking-widest flex items-center gap-2">
+                            <i class="fas fa-robot"></i> Status Underwater Drone
+                        </h3>
+                        <span class="px-3 py-1 bg-brand-accent/10 text-brand-accent text-xs font-bold rounded-full" id="drone-active-status">AKTIF</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 bg-zinc-800/50 rounded-xl">
+                            <div class="text-xs text-zinc-500 mb-1">Kedalaman</div>
+                            <div class="text-xl font-bold text-brand-accent" id="current-depth">12.5 m</div>
+                        </div>
+                        <div class="p-3 bg-zinc-800/50 rounded-xl">
+                            <div class="text-xs text-zinc-500 mb-1">Tekanan Air</div>
+                            <div class="text-xl font-bold text-brand-accent" id="water-pressure">1.25 atm</div>
+                        </div>
+                        <div class="p-3 bg-zinc-800/50 rounded-xl">
+                            <div class="text-xs text-zinc-500 mb-1">Baterai</div>
+                            <div class="text-xl font-bold text-brand-accent" id="battery-level">87%</div>
+                        </div>
+                        <div class="p-3 bg-zinc-800/50 rounded-xl">
+                            <div class="text-xs text-zinc-500 mb-1">Jarak dari Base</div>
+                            <div class="text-xl font-bold text-brand-accent" id="distance-from-base">150 m</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats Card -->
+                <div class="p-6 rounded-2xl bg-brand-card border border-brand-border">
+                    <h3 class="text-xs font-bold text-brand-accent uppercase tracking-widest flex items-center gap-2 mb-6">
+                        <i class="fas fa-chart-bar"></i> Ringkasan Statistik
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-zinc-400 text-sm">pH Rata-rata</span>
+                            <span class="font-bold text-cyan-400" id="avg-ph">7.2</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-zinc-400 text-sm">Kekeruhan Rata-rata</span>
+                            <span class="font-bold text-green-400" id="avg-turbidity">5.2 NTU</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-zinc-400 text-sm">Suhu Rata-rata</span>
+                            <span class="font-bold text-orange-400" id="avg-temperature">24.5°C</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-zinc-400 text-sm">Oksigen Rata-rata</span>
+                            <span class="font-bold text-red-400" id="avg-oxygen">6.8 mg/L</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <span>Water Sample #402 Analyzed. Details uploaded.</span>
-          </div>
-          <div
-            class="flex flex-col gap-1 opacity-80 border-t dark:border-white/5 border-black/5 pt-2"
-          >
-            <div class="flex justify-between">
-              <span class="dark:text-neon-orange text-orange-500 font-bold"
-                >[WARN]</span
-              >
-              <span class="opacity-50 text-[10px]">08:40:12</span>
+
+            <!-- Chart Container -->
+            <div class="p-8 rounded-2xl bg-brand-card border border-brand-border">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                    <div class="flex items-center gap-3">
+                        <div class="w-1.5 h-6 bg-brand-accent rounded-full"></div>
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-brand-accent">Parameter Kualitas Air 24 Jam</h3>
+                    </div>
+                    <!-- Time Selector -->
+                    <div class="flex gap-2 bg-zinc-800/50 p-1 rounded-lg">
+                        <button onclick="changeTimeRange('6h')" class="time-btn px-3 py-1 text-xs rounded-md text-zinc-400 hover:text-brand-accent transition-all">6 Jam</button>
+                        <button onclick="changeTimeRange('24h')" class="time-btn px-3 py-1 text-xs rounded-md bg-brand-accent/20 text-brand-accent active">24 Jam</button>
+                        <button onclick="changeTimeRange('7d')" class="time-btn px-3 py-1 text-xs rounded-md text-zinc-400 hover:text-brand-accent transition-all">7 Hari</button>
+                    </div>
+                </div>
+                <div class="h-[350px] w-full">
+                    <canvas id="trendChart"></canvas>
+                </div>
             </div>
-            <span>Wind gust detected (14m/s). Stabilizing...</span>
-          </div>
-          <div
-            class="flex flex-col gap-1 opacity-80 border-t dark:border-white/5 border-black/5 pt-2"
-          >
-            <div class="flex justify-between">
-              <span class="dark:text-neon-purple text-purple-500 font-bold"
-                >[SYS]</span
-              >
-              <span class="opacity-50 text-[10px]">08:39:20</span>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="section-reports" class="space-y-8 hidden">
+            <div>
+                <h2 class="text-3xl font-bold text-zinc-100">Data <span class="text-brand-accent">Reports</span></h2>
+                <p class="text-zinc-500 mt-2">Historical summary and sensor analytics</p>
             </div>
-            <span>Battery efficiency computed.</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- 3. Water Quality -->
-      <div
-        class="glass-card col-span-1 flex flex-col items-center justify-center text-center tech-border min-h-[250px] group"
-      >
-        <div
-          class="w-12 h-12 rounded-full dark:bg-sky-500/10 bg-sky-100 flex items-center justify-center dark:text-sky-400 text-sky-600 border dark:border-sky-500/20 border-sky-200 transition-colors mb-4 group-hover:scale-110 duration-300"
-        >
-          <i class="fa-solid fa-droplet text-xl"></i>
-        </div>
-        <h3 class="opacity-60 text-sm uppercase mb-1">Water pH</h3>
-        <div
-          id="val-water"
-          class="text-6xl font-bold dark:text-white text-slate-800 tracking-tight"
-        >
-          --
-        </div>
-        <div class="text-sm font-medium dark:text-sky-400 text-sky-600 mt-2">
-          Normal
-        </div>
-      </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Summary Card -->
+                <div class="lg:col-span-1 p-6 rounded-2xl glass space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-brand-accent uppercase tracking-widest">Report Summary</h3>
+                        <select onchange="fetchReports(this.value)"
+                            class="bg-transparent border-none text-[10px] font-bold uppercase text-brand-accent focus:ring-0 cursor-pointer">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-zinc-800/50">
+                            <span class="text-xs text-zinc-500 font-bold uppercase">Avg PH</span>
+                            <span id="rep-avg-ph" class="font-bold text-cyan-400">7.20</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-zinc-800/50">
+                            <span class="text-xs text-zinc-500 font-bold uppercase">Max Turbidity</span>
+                            <span id="rep-max-turb" class="font-bold text-green-400">5.2 NTU</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-zinc-800/50">
+                            <span class="text-xs text-zinc-500 font-bold uppercase">Avg Temperature</span>
+                            <span id="rep-avg-temp" class="font-bold text-orange-400">24.5°C</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-zinc-800/50">
+                            <span class="text-xs text-zinc-500 font-bold uppercase">Log Count</span>
+                            <span id="rep-total-logs" class="font-bold">0</span>
+                        </div>
+                    </div>
+                    <button onclick="exportToPDF()" id="pdfBtn"
+                        class="w-full py-4 bg-brand-accent text-brand-dark rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-blue-400 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-download w-4 h-4"></i>
+                        <span>Export Full Report (PDF)</span>
+                    </button>
 
-      <!-- 4. Air Quality -->
-      <div
-        class="glass-card col-span-1 flex flex-col items-center justify-center text-center tech-border min-h-[250px] group"
-      >
-        <div
-          class="w-12 h-12 rounded-full dark:bg-green-500/10 bg-green-100 flex items-center justify-center dark:text-green-400 text-green-600 border dark:border-green-500/20 border-green-200 transition-colors mb-4 group-hover:scale-110 duration-300"
-        >
-          <i class="fa-solid fa-wind text-xl"></i>
-        </div>
-        <h3 class="opacity-60 text-sm uppercase mb-1">Air Quality</h3>
-        <div
-          id="val-air"
-          class="text-6xl font-bold dark:text-white text-slate-800 tracking-tight"
-        >
-          --
-        </div>
-        <div
-          class="text-sm font-medium dark:text-green-400 text-green-600 mt-2"
-        >
-          AQI (Good)
-        </div>
-      </div>
+                    <!-- Mini Chart for Reports -->
+                    <div class="pt-4 border-t border-brand-border">
+                        <h4 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Period Overview</h4>
+                        <div class="h-[150px]">
+                            <canvas id="reportChart"></canvas>
+                        </div>
+                    </div>
+                </div>
 
-      <!-- 5. Soil Moisture -->
-      <div
-        class="glass-card col-span-1 flex flex-col items-center justify-center text-center tech-border min-h-[250px] group"
-      >
-        <div
-          class="w-12 h-12 rounded-full dark:bg-orange-500/10 bg-orange-100 flex items-center justify-center dark:text-orange-400 text-orange-600 border dark:border-orange-500/20 border-orange-200 transition-colors mb-4 group-hover:scale-110 duration-300"
-        >
-          <i class="fa-solid fa-layer-group text-xl"></i>
-        </div>
-        <h3 class="opacity-60 text-sm uppercase mb-1">Soil Moisture</h3>
-        <div
-          class="text-6xl font-bold dark:text-white text-slate-800 tracking-tight"
-        >
-          <span id="val-soil">--</span
-          ><span class="text-2xl align-top opacity-50 ml-1">%</span>
-        </div>
-        <div
-          class="text-sm font-medium dark:text-orange-400 text-orange-600 mt-2"
-        >
-          Optimal
-        </div>
-      </div>
+                <!-- History Table -->
+                <div class="lg:col-span-2 rounded-2xl bg-brand-card border border-brand-border overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-zinc-800/50 border-b border-brand-border">
+                            <tr>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-500">Timestamp</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-500">pH</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-500">Turbidity (NTU)</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-500">Temperature (°C)</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-500">Oxygen (mg/L)</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-500">Depth (m)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-table-body" class="divide-y divide-brand-border">
+                            <tr id="report-table-placeholder">
+                                <td colspan="6" class="px-6 py-10 text-center text-xs text-zinc-400">Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
 
-      <!-- 6. Energy -->
-      <div
-        class="glass-card col-span-1 flex flex-col items-center justify-center text-center tech-border min-h-[250px] group"
-      >
-        <div
-          class="w-12 h-12 rounded-full dark:bg-purple-500/10 bg-purple-100 flex items-center justify-center dark:text-purple-400 text-purple-600 border dark:border-purple-500/20 border-purple-200 transition-colors mb-4 group-hover:scale-110 duration-300"
-        >
-          <i class="fa-solid fa-bolt text-xl"></i>
-        </div>
-        <h3 class="opacity-60 text-sm uppercase mb-1">Energy Load</h3>
-        <div
-          class="text-6xl font-bold dark:text-white text-slate-800 tracking-tight"
-        >
-          <span id="val-energy">--</span
-          ><span class="text-2xl align-top opacity-50 ml-1">W</span>
-        </div>
-        <div
-          class="text-sm font-medium dark:text-purple-400 text-purple-600 mt-2"
-        >
-          Battery: 82%
-        </div>
-      </div>
-    </div>
+    <footer class="max-w-[1400px] mx-auto px-6 py-12 text-center">
+        <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Sistem Monitoring Kualitas Air - Underwater Drone © 2024 | Update Interval: 10 Detik</p>
+    </footer>
 
     <script>
-      // --- CLOCK ---
-      function updateTime() {
-        const now = new Date();
-        document.getElementById("clock").innerText = now.toLocaleTimeString(
-          "en-US",
-          { hour12: false },
-        );
-      }
-      setInterval(updateTime, 1000);
-      updateTime();
+        // Initialize Lucide Icons
+        lucide.createIcons();
 
-      // --- THEME ---
-      function toggleTheme() {
-        document.documentElement.classList.toggle("dark");
-        setMode(currentMode);
-      }
+        // Clock Management
+        let startTime = Date.now();
+        function updateClock() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('id-ID', { hour12: false });
+            document.getElementById('clock').textContent = time;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
 
-      // --- CHARTS & DATA ---
-      let chartMain;
-      let updateInterval;
-      let currentMode = "minute";
-      const ctxMain = document.getElementById("mainChart").getContext("2d");
+        // Tab Management
+        function switchTab(tab) {
+            const monSection = document.getElementById('section-monitoring');
+            const repSection = document.getElementById('section-reports');
+            const monTab = document.getElementById('tab-monitoring');
+            const repTab = document.getElementById('tab-reports');
 
-      const commonOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: {
-            display: true,
-            grid: { display: false },
-            ticks: { color: "#64748b", font: { size: 10 } },
-          },
-          y: { display: false },
-        },
-        elements: { point: { radius: 0, hoverRadius: 6 } },
-        interaction: { mode: "index", intersect: false },
-      };
-
-      function setMode(mode) {
-        currentMode = mode;
-
-        // Buttons UI
-        document
-          .querySelectorAll("#btn-minute, #btn-hour, #btn-day")
-          .forEach((btn) => {
-            btn.className =
-              "px-4 py-1.5 text-xs rounded-md transition-all font-medium opacity-60 hover:opacity-100";
-          });
-
-        // Active state classes
-        const activeClass =
-          "px-4 py-1.5 text-xs rounded-md transition-all font-medium bg-sky-500 text-white shadow-lg opacity-100 dark:bg-neon-blue dark:text-black";
-        document.getElementById(`btn-${mode}`).className = activeClass;
-
-        // Indicator Logic
-        const indicator = document.getElementById("live-indicator");
-        const title = document.getElementById("chart-title");
-
-        if (mode === "minute") {
-          indicator.className =
-            "w-2 h-2 rounded-full animate-pulse bg-sky-500 dark:bg-neon-blue";
-          title.innerText = "Live Telemetry (Real-time)";
-        } else {
-          indicator.className = "w-2 h-2 rounded-full bg-gray-400";
-          title.innerText = mode === "hour" ? "Hourly Trend" : "Daily Trend";
+            if (tab === 'monitoring') {
+                monSection.classList.remove('hidden');
+                repSection.classList.add('hidden');
+                monTab.classList.add('tab-active');
+                repTab.classList.remove('tab-active');
+                repTab.classList.add('text-zinc-500');
+            } else {
+                monSection.classList.add('hidden');
+                repSection.classList.remove('hidden');
+                repTab.classList.add('tab-active');
+                monTab.classList.remove('tab-active');
+                monTab.classList.add('text-zinc-500');
+            }
         }
 
-        renderChart();
-      }
+        // Sensor Data Management
+        let sensorData = {
+            ph: 7.2,
+            turbidity: 5.2,
+            temperature: 24.5,
+            oxygen: 6.8,
+            depth: 12.5,
+            battery: 87,
+            distance: 150
+        };
 
-      function getDataForMode(mode) {
-        if (mode === "minute") {
-          // Return 20 points for last 20 seconds
-          return {
-            labels: Array.from({ length: 20 }, (_, i) => `${20 - i}s`),
-            data: Array.from({ length: 20 }, () =>
-              Math.floor(Math.random() * 30 + 100),
-            ),
-          };
-        } else if (mode === "hour") {
-          // Return 12 points (every 5 mins)
-          return {
-            labels: [
-              "00",
-              "05",
-              "10",
-              "15",
-              "20",
-              "25",
-              "30",
-              "35",
-              "40",
-              "45",
-              "50",
-              "55",
-            ],
-            data: [120, 135, 125, 140, 150, 145, 130, 125, 135, 145, 155, 148],
-          };
-        } else {
-          // Return 7 points (days)
-          return {
-            labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-            data: [110, 140, 135, 120, 150, 160, 145],
-          };
+        let historyData = [];
+        let waterQualityChart;
+
+        // Initialize Chart
+        function initChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            waterQualityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '00:00'],
+                    datasets: [
+                        {
+                            label: 'pH Level',
+                            data: [7.0, 7.1, 7.3, 7.2, 7.1, 7.0, 7.2],
+                            borderColor: '#2196f3',
+                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Kekeruhan (NTU)',
+                            data: [4.8, 5.0, 5.3, 5.5, 5.2, 5.0, 5.2],
+                            borderColor: '#4caf50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Suhu (°C)',
+                            data: [23.5, 24.0, 24.8, 25.0, 24.5, 24.2, 24.5],
+                            borderColor: '#ff9800',
+                            backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Oksigen (mg/L)',
+                            data: [6.5, 6.6, 6.8, 7.0, 6.9, 6.8, 6.8],
+                            borderColor: '#f44336',
+                            backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#a8b2d1',
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#112240',
+                            titleColor: '#64ffda',
+                            bodyColor: '#ffffff',
+                            borderColor: '#64ffda',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(168, 178, 209, 0.1)' },
+                            ticks: { color: '#a8b2d1' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(168, 178, 209, 0.1)' },
+                            ticks: { color: '#a8b2d1' },
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
         }
-      }
 
-      function renderChart() {
-        if (chartMain) chartMain.destroy();
-        clearInterval(updateInterval);
+        // Time range changer
+        function changeTimeRange(range) {
+            const timeBtns = document.querySelectorAll('.time-btn');
+            timeBtns.forEach(btn => btn.classList.remove('active', 'bg-brand-accent/20', 'text-brand-accent'));
+            
+            if (event.target.classList.contains('time-btn')) {
+                event.target.classList.add('active', 'bg-brand-accent/20', 'text-brand-accent');
+            }
+            
+            // Update chart based on range
+            const newLabels = range === '6h' 
+                ? ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00']
+                : range === '24h'
+                ? ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '00:00']
+                : ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+            
+            if (waterQualityChart) {
+                waterQualityChart.data.labels = newLabels;
+                waterQualityChart.update();
+            }
+        }
 
-        const isDark = document.documentElement.classList.contains("dark");
-        const color = isDark ? "#00f0ff" : "#0ea5e9";
+        // Simulate real-time sensor updates
+        async function updateSensorValues() {
+            try {
+                // Simulasi data real-time
+                sensorData = {
+                    ph: Math.max(6.5, Math.min(7.8, sensorData.ph + (Math.random() - 0.5) * 0.1)),
+                    turbidity: Math.max(3, Math.min(15, sensorData.turbidity + (Math.random() - 0.5) * 0.5)),
+                    temperature: Math.max(22, Math.min(27, sensorData.temperature + (Math.random() - 0.5) * 0.3)),
+                    oxygen: Math.max(5.5, Math.min(8.5, sensorData.oxygen + (Math.random() - 0.5) * 0.2)),
+                    depth: Math.max(10, Math.min(15, sensorData.depth + (Math.random() - 0.5) * 0.3)),
+                    battery: Math.max(80, Math.min(100, sensorData.battery - 0.05)),
+                    distance: Math.max(140, Math.min(160, sensorData.distance + (Math.random() - 0.5) * 2))
+                };
 
-        const gradientMain = ctxMain.createLinearGradient(0, 0, 0, 400);
-        gradientMain.addColorStop(
-          0,
-          isDark ? "rgba(0, 240, 255, 0.4)" : "rgba(14, 165, 233, 0.4)",
-        );
-        gradientMain.addColorStop(
-          1,
-          isDark ? "rgba(0, 240, 255, 0)" : "rgba(14, 165, 233, 0)",
-        );
+                // Update display values
+                updateDisplayValues();
+                checkAlerts();
+                updateHistoryTable();
 
-        const initialData = getDataForMode(currentMode);
+                // Update chart data
+                if (waterQualityChart) {
+                    // Shift data and add new values
+                    waterQualityChart.data.datasets[0].data.shift();
+                    waterQualityChart.data.datasets[0].data.push(sensorData.ph);
+                    
+                    waterQualityChart.data.datasets[1].data.shift();
+                    waterQualityChart.data.datasets[1].data.push(sensorData.turbidity);
+                    
+                    waterQualityChart.data.datasets[2].data.shift();
+                    waterQualityChart.data.datasets[2].data.push(sensorData.temperature);
+                    
+                    waterQualityChart.data.datasets[3].data.shift();
+                    waterQualityChart.data.datasets[3].data.push(sensorData.oxygen);
+                    
+                    waterQualityChart.update('none');
+                }
 
-        chartMain = new Chart(ctxMain, {
-          type: "line",
-          data: {
-            labels: initialData.labels,
-            datasets: [
-              {
-                data: initialData.data,
-                borderColor: color,
-                backgroundColor: gradientMain,
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-              },
-            ],
-          },
-          options: {
-            ...commonOptions,
-            scales: {
-              x: {
-                display: true,
-                grid: { display: false },
-                ticks: { color: isDark ? "#64748b" : "#94a3b8" },
-              },
-              y: { display: false },
-            },
-          },
+            } catch (error) {
+                console.error('Error updating sensor values:', error);
+                document.getElementById('connection-text').textContent = 'Koneksi Drone: Gangguan';
+                document.getElementById('connection-status').style.backgroundColor = '#f44336';
+            }
+        }
+
+        // Update display values
+        function updateDisplayValues() {
+            // Sensor Cards
+            document.getElementById('val-ph').textContent = sensorData.ph.toFixed(1);
+            document.getElementById('val-water').textContent = sensorData.turbidity.toFixed(1);
+            document.getElementById('val-temperature').textContent = sensorData.temperature.toFixed(1);
+            document.getElementById('val-oxygen').textContent = sensorData.oxygen.toFixed(1);
+            
+            // Header Stats
+            document.getElementById('avg-ph').textContent = sensorData.ph.toFixed(1);
+            document.getElementById('avg-turbidity').textContent = sensorData.turbidity.toFixed(1) + ' NTU';
+            document.getElementById('avg-temperature').textContent = sensorData.temperature.toFixed(1) + '°C';
+            document.getElementById('avg-oxygen').textContent = sensorData.oxygen.toFixed(1) + ' mg/L';
+            
+            // Drone Status
+            document.getElementById('current-depth').textContent = sensorData.depth.toFixed(1) + ' m';
+            document.getElementById('water-pressure').textContent = (sensorData.depth / 10).toFixed(2) + ' atm';
+            document.getElementById('battery-level').textContent = Math.round(sensorData.battery) + '%';
+            document.getElementById('distance-from-base').textContent = Math.round(sensorData.distance) + ' m';
+            
+            // Progress Bars
+            updateProgressBars();
+            
+            // Status Indicators
+            updateStatusIndicators();
+        }
+
+        // Update progress bars
+        function updateProgressBars() {
+            // pH: 0-14 scale
+            const phPercent = ((sensorData.ph - 4) / 6) * 100;
+            document.getElementById('ph-bar').style.width = Math.min(100, Math.max(0, phPercent)) + '%';
+            document.getElementById('ph-percent').textContent = Math.round(phPercent) + '%';
+            
+            // Turbidity: 0-100 NTU
+            const turbidityPercent = (sensorData.turbidity / 50) * 100;
+            document.getElementById('turbidity-bar').style.width = Math.min(100, Math.max(0, turbidityPercent)) + '%';
+            document.getElementById('turbidity-percent').textContent = Math.round(turbidityPercent) + '%';
+            
+            // Temperature: 15-35°C
+            const tempPercent = ((sensorData.temperature - 15) / 20) * 100;
+            document.getElementById('temperature-bar').style.width = Math.min(100, Math.max(0, tempPercent)) + '%';
+            document.getElementById('temperature-percent').textContent = Math.round(tempPercent) + '%';
+            
+            // Oxygen: 0-14 mg/L
+            const oxygenPercent = (sensorData.oxygen / 10) * 100;
+            document.getElementById('oxygen-bar').style.width = Math.min(100, Math.max(0, oxygenPercent)) + '%';
+            document.getElementById('oxygen-percent').textContent = Math.round(oxygenPercent) + '%';
+        }
+
+        // Update status indicators
+        function updateStatusIndicators() {
+            // pH Status
+            let phStatus = '';
+            if (sensorData.ph < 6.5) phStatus = 'ASAM';
+            else if (sensorData.ph > 8.5) phStatus = 'BASA';
+            else phStatus = 'NORMAL';
+            document.getElementById('ph-status').textContent = phStatus;
+            
+            // Turbidity Status
+            let turbidityStatus = '';
+            if (sensorData.turbidity < 5) turbidityStatus = 'JERNIH';
+            else if (sensorData.turbidity < 10) turbidityStatus = 'SEDANG';
+            else turbidityStatus = 'KERUH';
+            document.getElementById('turbidity-status').textContent = turbidityStatus;
+            
+            // Temperature Status
+            let tempStatus = '';
+            if (sensorData.temperature < 20) tempStatus = 'DINGIN';
+            else if (sensorData.temperature > 26) tempStatus = 'HANGAT';
+            else tempStatus = 'IDEAL';
+            document.getElementById('temperature-status').textContent = tempStatus;
+            
+            // Oxygen Status
+            let oxygenStatus = '';
+            if (sensorData.oxygen < 5) oxygenStatus = 'RENDAH';
+            else if (sensorData.oxygen < 6.5) oxygenStatus = 'CUKUP';
+            else oxygenStatus = 'BAIK';
+            document.getElementById('oxygen-status').textContent = oxygenStatus;
+            
+            // Drone Status
+            document.getElementById('drone-active-status').textContent = 
+                sensorData.battery > 20 ? 'AKTIF' : 'PERINGATAN';
+        }
+
+        // Check for alerts
+        function checkAlerts() {
+            const alertsContainer = document.getElementById('alerts-container');
+            alertsContainer.innerHTML = '';
+            
+            // Check pH
+            if (sensorData.ph < 6.0 || sensorData.ph > 9.0) {
+                addAlert('pH air di luar batas normal!', 'danger');
+            }
+            
+            // Check turbidity
+            if (sensorData.turbidity > 20) {
+                addAlert('Kekeruhan air sangat tinggi!', 'warning');
+            }
+            
+            // Check oxygen
+            if (sensorData.oxygen < 4) {
+                addAlert('Kadar oksigen sangat rendah!', 'danger');
+            }
+            
+            // Check battery
+            if (sensorData.battery < 20) {
+                addAlert('Baterai drone rendah!', 'warning');
+            }
+        }
+
+        // Add alert
+        function addAlert(message, type) {
+            const alertsContainer = document.getElementById('alerts-container');
+            const alertDiv = document.createElement('div');
+            
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                ${message}
+            `;
+            
+            alertsContainer.appendChild(alertDiv);
+        }
+
+        // Update history table
+        function updateHistoryTable() {
+            const now = new Date();
+            const timeString = now.toTimeString().substring(0, 5);
+            
+            // Add new data point
+            historyData.unshift({
+                time: timeString,
+                ph: sensorData.ph.toFixed(1),
+                turbidity: sensorData.turbidity.toFixed(1),
+                temperature: sensorData.temperature.toFixed(1),
+                oxygen: sensorData.oxygen.toFixed(1),
+                depth: sensorData.depth.toFixed(1)
+            });
+            
+            // Keep only last 10 entries
+            if (historyData.length > 10) {
+                historyData.pop();
+            }
+            
+            // Update table body
+            const tbody = document.getElementById('report-table-body');
+            tbody.innerHTML = historyData.map(data => `
+                <tr class="hover:bg-zinc-800/30 transition-colors">
+                    <td class="px-6 py-4 text-xs font-mono text-zinc-400">${data.time}</td>
+                    <td class="px-6 py-4 text-xs font-bold text-cyan-400">${data.ph}</td>
+                    <td class="px-6 py-4 text-xs font-bold text-green-400">${data.turbidity} NTU</td>
+                    <td class="px-6 py-4 text-xs font-bold text-orange-400">${data.temperature}°C</td>
+                    <td class="px-6 py-4 text-xs font-bold text-red-400">${data.oxygen} mg/L</td>
+                    <td class="px-6 py-4 text-xs font-bold text-brand-accent">${data.depth} m</td>
+                </tr>
+            `).join('');
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            initChart();
+            updateSensorValues();
+            
+            // Update sensor values every 10 seconds
+            setInterval(updateSensorValues, 10000);
+            
+            // Update sync status
+            setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const hrs = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+                const mins = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+                const secs = String(elapsed % 60).padStart(2, '0');
+                document.getElementById('syncStatus').textContent = `${hrs}:${mins}:${secs}`;
+            }, 1000);
         });
-
-        // If minute mode, simulation is replaced by real API data polling elsewhere
-        if (currentMode === "minute") {
-          // No internal simulation. Driven by fetchLatestData()
-        }
-      }
-
-      // Init
-      document.addEventListener("DOMContentLoaded", () => {
-        // Force dark mode start
-        document.documentElement.classList.add("dark");
-        setMode("minute");
-
-        // Start polling data
-        setInterval(fetchLatestData, 2000); // Poll every 2 seconds
-        fetchLatestData(); // Initial fetch
-      });
-
-      async function fetchLatestData() {
-        try {
-          const response = await fetch("api.php?get_latest=true");
-          const data = await response.json();
-
-          if (data.status === "empty" || data.status === "error") {
-            console.warn("No data or error:", data.message);
-            return;
-          }
-
-          // Update Values
-          // Assuming API returns keys: kualitas_air, udara, tahan, daya_listrik
-          if (data.kualitas_air !== undefined)
-            document.getElementById("val-water").innerText = parseFloat(
-              data.kualitas_air,
-            ).toFixed(1);
-          if (data.udara !== undefined)
-            document.getElementById("val-air").innerText = parseFloat(
-              data.udara,
-            ).toFixed(0);
-          if (data.tahan !== undefined)
-            document.getElementById("val-soil").innerText = parseFloat(
-              data.tahan,
-            ).toFixed(0);
-          if (data.daya_listrik !== undefined)
-            document.getElementById("val-energy").innerText = parseFloat(
-              data.daya_listrik,
-            ).toFixed(0);
-
-          // Update Chart (Live Mode)
-          if (currentMode === "minute" && chartMain) {
-            const chartData = chartMain.data.datasets[0].data;
-            chartData.shift();
-            // Use one of the values for the main chart, e.g., Water Quality or aggregate
-            // Let's visualize Water Quality on the main chart for now, or just random as fallback
-            // Better to visualize one metric. Let's use 'kualitas_air' * 10 or similar if needed,
-            // but let's stick to valid range.
-            // The previous random was roughly 100-130.
-            // Let's just use 'daya_listrik' as it might be fluctuating more or just use the random
-            // simulation but seeded with real activity if we want real history.
-            // For now, let's keep the random simulation in the chart to avoid flatlining if data comes slowly,
-            // OR better: push the real value if available.
-
-            // Let's use Energy Load for the live chart
-            chartData.push(
-              data.daya_listrik ? parseFloat(data.daya_listrik) : 0,
-            );
-            chartMain.update("none");
-          }
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      }
     </script>
-  </body>
+</body>
+
 </html>
