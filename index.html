@@ -33,8 +33,15 @@
     </script>
     <style>
         @keyframes pulse-soft {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
         }
 
         .animate-pulse-soft {
@@ -119,8 +126,15 @@
         }
 
         @keyframes slideIn {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -132,7 +146,8 @@
         <div class="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
             <div class="flex flex-col">
                 <h1 class="text-xl font-bold tracking-wider leading-none text-brand-accent">CHRONO</h1>
-                <p class="text-[10px] text-zinc-400 font-semibold tracking-widest mt-1 uppercase">Underwater Drone - Real-time Water Quality Monitoring</p>
+                <p class="text-[10px] text-zinc-400 font-semibold tracking-widest mt-1 uppercase">Underwater Drone -
+                    Real-time Water Quality Monitoring</p>
             </div>
 
             <div class="flex items-center gap-8">
@@ -153,7 +168,8 @@
                     <span class="text-[10px] font-bold text-zinc-500 uppercase">Sync Status</span>
                     <div class="flex items-center gap-2">
                         <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-soft"></div>
-                        <span id="syncStatus" class="text-sm font-mono font-medium text-emerald-500 uppercase">Connected</span>
+                        <span id="syncStatus"
+                            class="text-sm font-mono font-medium text-emerald-500 uppercase">Connected</span>
                     </div>
                 </div>
             </div>
@@ -180,7 +196,8 @@
         <section id="section-monitoring" class="space-y-8 block">
             <div class="flex justify-between items-end">
                 <div>
-                    <h2 class="text-3xl font-bold text-zinc-100">Real-time <span class="text-brand-accent">Telemetry</span></h2>
+                    <h2 class="text-3xl font-bold text-zinc-100">Real-time <span
+                            class="text-brand-accent">Telemetry</span></h2>
                     <p class="text-zinc-500 mt-2">Live data from underwater probe</p>
                 </div>
                 <button onclick="refreshSystem()" id="refreshBtn"
@@ -199,7 +216,9 @@
                             <i class="fas fa-vial text-cyan-400"></i>
                             <h3 class="text-[10px] font-bold text-zinc-400 uppercase">pH Level</h3>
                         </div>
-                        <span class="px-2 py-1 bg-cyan-500/10 text-cyan-400 text-[8px] font-black rounded-full border border-cyan-500/20 uppercase" id="ph-status">NORMAL</span>
+                        <span
+                            class="px-2 py-1 bg-cyan-500/10 text-cyan-400 text-[8px] font-black rounded-full border border-cyan-500/20 uppercase"
+                            id="ph-status">NORMAL</span>
                     </div>
                     <div class="flex items-baseline gap-1">
                         <span class="text-4xl font-bold text-cyan-400" id="val-ph">7.2</span>
@@ -207,7 +226,8 @@
                     </div>
                     <div class="mt-4">
                         <div class="w-full h-1.5 bg-zinc-700 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-cyan-500 to-brand-accent rounded-full" id="ph-bar" style="width: 51%;"></div>
+                            <div class="h-full bg-gradient-to-r from-cyan-500 to-brand-accent rounded-full" id="ph-bar"
+                                style="width: 51%;"></div>
                         </div>
                         <div class="flex justify-between mt-2 text-[10px] text-zinc-500">
                             <span>Asam: 0</span>
@@ -224,7 +244,9 @@
                             <i class="fas fa-water text-green-400"></i>
                             <h3 class="text-[10px] font-bold text-zinc-400 uppercase">Kekeruhan</h3>
                         </div>
-                        <span class="px-2 py-1 bg-green-500/10 text-green-400 text-[8px] font-black rounded-full border border-green-500/20 uppercase" id="turbidity-status">JERNIH</span>
+                        <span
+                            class="px-2 py-1 bg-green-500/10 text-green-400 text-[8px] font-black rounded-full border border-green-500/20 uppercase"
+                            id="turbidity-status">JERNIH</span>
                     </div>
                     <div class="flex items-baseline gap-1">
                         <span class="text-4xl font-bold text-green-400" id="val-water">0</span>
@@ -232,12 +254,13 @@
                     </div>
                     <div class="mt-4">
                         <div class="w-full h-1.5 bg-zinc-700 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-green-500 to-brand-accent rounded-full" id="turbidity-bar" style="width: 0%;"></div>
+                            <div class="h-full bg-gradient-to-r from-green-500 to-brand-accent rounded-full"
+                                id="turbidity-bar" style="width: 0%;"></div>
                         </div>
                         <div class="flex justify-between mt-2 text-[10px] text-zinc-500">
                             <span>Jernih: 0</span>
                             <span id="turbidity-percent">0%</span>
-                            <span>Keruh: 100</span>
+                            <span>Keruh: 3000</span>
                         </div>
                     </div>
                 </div>
@@ -249,7 +272,9 @@
                             <i class="fas fa-battery-three-quarters text-purple-400"></i>
                             <h3 class="text-[10px] font-bold text-zinc-400 uppercase">Baterai</h3>
                         </div>
-                        <span class="px-2 py-1 bg-purple-500/10 text-purple-400 text-[8px] font-black rounded-full border border-purple-500/20 uppercase" id="battery-status">NORMAL</span>
+                        <span
+                            class="px-2 py-1 bg-purple-500/10 text-purple-400 text-[8px] font-black rounded-full border border-purple-500/20 uppercase"
+                            id="battery-status">NORMAL</span>
                     </div>
                     <div class="flex items-baseline gap-1">
                         <span class="text-4xl font-bold text-purple-400" id="val-battery">100</span>
@@ -257,7 +282,8 @@
                     </div>
                     <div class="mt-4">
                         <div class="w-full h-1.5 bg-zinc-700 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-purple-500 to-brand-accent rounded-full" id="battery-bar" style="width: 100%;"></div>
+                            <div class="h-full bg-gradient-to-r from-purple-500 to-brand-accent rounded-full"
+                                id="battery-bar" style="width: 100%;"></div>
                         </div>
                         <div class="flex justify-between mt-2 text-[10px] text-zinc-500">
                             <span>Min: 0%</span>
@@ -273,7 +299,8 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div class="flex items-center gap-3">
                         <div class="w-1.5 h-6 bg-brand-accent rounded-full"></div>
-                        <h3 class="text-xs font-bold uppercase tracking-widest text-brand-accent">Historical Trend (20 Data Terakhir)</h3>
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-brand-accent">Historical Trend (20
+                            Data Terakhir)</h3>
                     </div>
                     <!-- Legend -->
                     <div class="flex flex-wrap gap-4 text-[10px] font-bold uppercase">
@@ -348,7 +375,8 @@
                             <tr>
                                 <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-500">Timestamp</th>
                                 <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-500">pH</th>
-                                <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-500">Turbidity (NTU)</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-500">Turbidity (NTU)
+                                </th>
                                 <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-500">Battery (%)</th>
                             </tr>
                         </thead>
@@ -376,7 +404,7 @@
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID', { hour12: false });
-            
+
             const elapsed = Math.floor((Date.now() - startTime) / 1000);
             const hrs = String(Math.floor(elapsed / 3600)).padStart(2, '0');
             const mins = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
@@ -414,7 +442,7 @@
             trendChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: Array.from({ length: 20 }, (_, i) => `${i*3}s`),
+                    labels: Array.from({ length: 20 }, (_, i) => `${i * 3}s`),
                     datasets: [
                         {
                             label: 'pH',
@@ -468,11 +496,11 @@
             try {
                 // Gunakan URL absolut
                 const response = await fetch('http://fauzan.underwaterdrone.my.id/api.php?get_latest=true');
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
                 console.log('Data dari API:', data);
 
@@ -480,10 +508,10 @@
                 if (data && data.id) {
                     // Reset error count
                     fetchErrorCount = 0;
-                    
+
                     if (data.id !== lastDataId) {
                         lastDataId = data.id;
-                        
+
                         // Update nilai dengan data dari ESP32
                         const phValue = parseFloat(data.kualitas_air) || 0;
                         const turbValue = parseFloat(data.tahan) || 0;
@@ -509,12 +537,12 @@
                         const phPercent = (phValue / 14) * 100;
                         document.getElementById('ph-bar').style.width = Math.min(100, Math.max(0, phPercent)) + '%';
                         document.getElementById('ph-percent').textContent = Math.round(phPercent) + '%';
-                        
-                        // Turbidity: asumsi max 50 NTU
-                        const turbidityPercent = (turbValue / 50) * 100;
+
+                        // Turbidity: max 3000 NTU (sesuai sensor)
+                        const turbidityPercent = (turbValue / 3000) * 100;
                         document.getElementById('turbidity-bar').style.width = Math.min(100, Math.max(0, turbidityPercent)) + '%';
                         document.getElementById('turbidity-percent').textContent = Math.round(turbidityPercent) + '%';
-                        
+
                         // Battery
                         document.getElementById('battery-bar').style.width = battValue + '%';
                         document.getElementById('battery-percent').textContent = Math.round(battValue) + '%';
@@ -524,12 +552,12 @@
                         if (phValue < 6.5) document.getElementById('ph-status').textContent = 'ASAM';
                         else if (phValue > 8.5) document.getElementById('ph-status').textContent = 'BASA';
                         else document.getElementById('ph-status').textContent = 'NORMAL';
-                        
+
                         // Turbidity Status
                         if (turbValue < 5) document.getElementById('turbidity-status').textContent = 'JERNIH';
                         else if (turbValue < 10) document.getElementById('turbidity-status').textContent = 'SEDANG';
                         else document.getElementById('turbidity-status').textContent = 'KERUH';
-                        
+
                         // Battery Status
                         if (battValue > 60) document.getElementById('battery-status').textContent = 'NORMAL';
                         else if (battValue > 20) document.getElementById('battery-status').textContent = 'RENDAH';
@@ -539,7 +567,7 @@
                         document.getElementById('connection-text').textContent = 'Koneksi Drone: Stabil';
                         document.getElementById('connection-status').style.backgroundColor = '#10b981';
                         document.getElementById('syncStatus').innerHTML = 'CONNECTED';
-                        
+
                         console.log('Dashboard updated with ID:', data.id);
                     }
                 } else if (data.status === "empty") {
@@ -551,11 +579,11 @@
             } catch (error) {
                 fetchErrorCount++;
                 console.error('Error fetch ke-' + fetchErrorCount + ':', error.message);
-                
+
                 document.getElementById('connection-text').textContent = 'Koneksi Gagal';
                 document.getElementById('connection-status').style.backgroundColor = '#f44336';
                 document.getElementById('syncStatus').innerHTML = 'OFFLINE';
-                
+
                 // Jika gagal 3 kali berturut-turut, tampilkan pesan
                 if (fetchErrorCount > 3) {
                     document.getElementById('connection-text').textContent = 'Server tidak merespon';
@@ -571,12 +599,12 @@
 
                 if (result.status === "success") {
                     const s = result.summary || {};
-                    
-                    document.getElementById('rep-avg-ph').textContent = 
+
+                    document.getElementById('rep-avg-ph').textContent =
                         s.avg_kualitas_air ? parseFloat(s.avg_kualitas_air).toFixed(2) : '0.00';
-                    document.getElementById('rep-max-turb').textContent = 
+                    document.getElementById('rep-max-turb').textContent =
                         s.max_tahan ? Math.floor(s.max_tahan) + ' NTU' : '0 NTU';
-                    document.getElementById('rep-avg-battery').textContent = 
+                    document.getElementById('rep-avg-battery').textContent =
                         s.avg_daya_listrik ? Math.floor(s.avg_daya_listrik) + '%' : '0%';
                     document.getElementById('rep-total-logs').textContent = s.total_logs || '0';
 
@@ -606,7 +634,7 @@
         async function refreshSystem() {
             const btn = document.getElementById('refreshBtn');
             const icon = document.getElementById('refreshIcon');
-            
+
             btn.disabled = true;
             icon.setAttribute('data-lucide', 'loader-2');
             icon.classList.add('animate-spin');
@@ -639,7 +667,7 @@
                 const response = await fetch('http://fauzan.underwaterdrone.my.id/api.php?test=true');
                 const data = await response.json();
                 console.log('Test connection:', data);
-                
+
                 if (data.status === 'success') {
                     document.getElementById('connection-text').textContent = 'API Connected';
                 }
