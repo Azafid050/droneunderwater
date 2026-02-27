@@ -163,6 +163,12 @@
                     <span id="clock" class="text-xl font-mono font-medium text-brand-accent">00:00:00</span>
                 </div>
 
+                <!-- Last Updated -->
+                <div class="hidden md:flex flex-col items-end">
+                    <span class="text-[10px] font-bold text-zinc-500 uppercase">Last Updated</span>
+                    <span id="lastUpdated" class="text-xs font-mono font-medium text-zinc-400">--:--:--</span>
+                </div>
+
                 <!-- Sync Status -->
                 <div class="flex flex-col items-end border-l border-brand-border pl-8">
                     <span class="text-[10px] font-bold text-zinc-500 uppercase">Sync Status</span>
@@ -492,27 +498,38 @@
         let lastDataId = null;
         let fetchErrorCount = 0;
 
+        function setConnected(msg) {
+            fetchErrorCount = 0;
+            document.getElementById('connection-text').textContent = msg;
+            document.getElementById('connection-status').style.backgroundColor = '#10b981';
+            document.getElementById('syncStatus').textContent = 'CONNECTED';
+            document.getElementById('syncStatus').style.color = '#10b981';
+        }
+
+        function setOffline(reason) {
+            fetchErrorCount++;
+            document.getElementById('connection-text').textContent = reason;
+            document.getElementById('connection-status').style.backgroundColor = '#f44336';
+            document.getElementById('syncStatus').textContent = 'OFFLINE';
+            document.getElementById('syncStatus').style.color = '#f44336';
+        }
+
         async function fetchData() {
             try {
-                // Gunakan URL absolut
-                const response = await fetch('http://fauzan.underwaterdrone.my.id/api.php?get_latest=true');
+                // Relative URL - lebih aman karena dashboard dan API di server yang sama
+                const response = await fetch('api.php?get_latest=true', { cache: 'no-store' });
 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
                 const data = await response.json();
                 console.log('Data dari API:', data);
 
-                // Cek apakah data valid (bisa dalam format {id:...} atau {status:"empty"})
                 if (data && data.id) {
-                    // Reset error count
-                    fetchErrorCount = 0;
-
                     if (data.id !== lastDataId) {
                         lastDataId = data.id;
 
-                        // Update nilai dengan data dari ESP32
                         const phValue = parseFloat(data.kualitas_air) || 0;
                         const turbValue = parseFloat(data.tahan) || 0;
                         const battValue = parseFloat(data.daya_listrik) || 0;
@@ -521,8 +538,11 @@
                         document.getElementById('val-water').textContent = Math.floor(turbValue);
                         document.getElementById('val-battery').textContent = Math.floor(battValue);
 
-                        // Update chart
+                        // Update chart dengan label waktu nyata
                         if (trendChart) {
+                            const ts = new Date().toLocaleTimeString('id-ID', { hour12: false });
+                            trendChart.data.labels.shift();
+                            trendChart.data.labels.push(ts);
                             trendChart.data.datasets[0].data.shift();
                             trendChart.data.datasets[0].data.push(phValue);
                             trendChart.data.datasets[1].data.shift();
@@ -532,62 +552,49 @@
                             trendChart.update('none');
                         }
 
-                        // Update progress bars
-                        // pH: 0-14 scale
+                        // Progress bars
                         const phPercent = (phValue / 14) * 100;
+                        const turbPercent = (turbValue / 3000) * 100;
                         document.getElementById('ph-bar').style.width = Math.min(100, Math.max(0, phPercent)) + '%';
                         document.getElementById('ph-percent').textContent = Math.round(phPercent) + '%';
-
-                        // Turbidity: max 3000 NTU (sesuai sensor)
-                        const turbidityPercent = (turbValue / 3000) * 100;
-                        document.getElementById('turbidity-bar').style.width = Math.min(100, Math.max(0, turbidityPercent)) + '%';
-                        document.getElementById('turbidity-percent').textContent = Math.round(turbidityPercent) + '%';
-
-                        // Battery
+                        document.getElementById('turbidity-bar').style.width = Math.min(100, Math.max(0, turbPercent)) + '%';
+                        document.getElementById('turbidity-percent').textContent = Math.round(turbPercent) + '%';
                         document.getElementById('battery-bar').style.width = battValue + '%';
                         document.getElementById('battery-percent').textContent = Math.round(battValue) + '%';
 
-                        // Update status
-                        // pH Status
+                        // Status badges
                         if (phValue < 6.5) document.getElementById('ph-status').textContent = 'ASAM';
                         else if (phValue > 8.5) document.getElementById('ph-status').textContent = 'BASA';
                         else document.getElementById('ph-status').textContent = 'NORMAL';
 
-                        // Turbidity Status
                         if (turbValue < 5) document.getElementById('turbidity-status').textContent = 'JERNIH';
-                        else if (turbValue < 10) document.getElementById('turbidity-status').textContent = 'SEDANG';
+                        else if (turbValue < 50) document.getElementById('turbidity-status').textContent = 'SEDANG';
                         else document.getElementById('turbidity-status').textContent = 'KERUH';
 
-                        // Battery Status
                         if (battValue > 60) document.getElementById('battery-status').textContent = 'NORMAL';
                         else if (battValue > 20) document.getElementById('battery-status').textContent = 'RENDAH';
                         else document.getElementById('battery-status').textContent = 'KRITIS';
 
-                        // Update koneksi
-                        document.getElementById('connection-text').textContent = 'Koneksi Drone: Stabil';
-                        document.getElementById('connection-status').style.backgroundColor = '#10b981';
-                        document.getElementById('syncStatus').innerHTML = 'CONNECTED';
+                        // Timestamp update terakhir
+                        document.getElementById('lastUpdated').textContent =
+                            new Date().toLocaleTimeString('id-ID', { hour12: false });
 
-                        console.log('Dashboard updated with ID:', data.id);
+                        setConnected('Koneksi Drone: Stabil (#' + data.id + ')');
+                        console.log('Dashboard updated, ID:', data.id);
+                    } else {
+                        setConnected('Menunggu data baru dari drone...');
                     }
-                } else if (data.status === "empty") {
-                    console.log('Belum ada data dari drone');
-                    document.getElementById('connection-text').textContent = 'Menunggu data drone...';
+                } else if (data.status === 'empty') {
+                    setConnected('Menunggu data dari drone...');
                 } else {
-                    console.log('Data tidak valid:', data);
+                    console.warn('Response tidak dikenali:', data);
                 }
             } catch (error) {
-                fetchErrorCount++;
-                console.error('Error fetch ke-' + fetchErrorCount + ':', error.message);
-
-                document.getElementById('connection-text').textContent = 'Koneksi Gagal';
-                document.getElementById('connection-status').style.backgroundColor = '#f44336';
-                document.getElementById('syncStatus').innerHTML = 'OFFLINE';
-
-                // Jika gagal 3 kali berturut-turut, tampilkan pesan
-                if (fetchErrorCount > 3) {
-                    document.getElementById('connection-text').textContent = 'Server tidak merespon';
-                }
+                console.error('fetchData error:', error.message);
+                const msg = fetchErrorCount > 3
+                    ? 'Server tidak merespon'
+                    : 'Koneksi Gagal: ' + error.message;
+                setOffline(msg);
             }
         }
 
@@ -664,15 +671,17 @@
         // Test koneksi API
         async function testConnection() {
             try {
-                const response = await fetch('http://fauzan.underwaterdrone.my.id/api.php?test=true');
+                const response = await fetch('api.php?test=true', { cache: 'no-store' });
                 const data = await response.json();
                 console.log('Test connection:', data);
 
                 if (data.status === 'success') {
-                    document.getElementById('connection-text').textContent = 'API Connected';
+                    document.getElementById('connection-text').textContent =
+                        'API: OK | DB: ' + data.database + ' | ' + data.timestamp;
                 }
             } catch (error) {
                 console.error('Test connection failed:', error);
+                document.getElementById('connection-text').textContent = 'API Error: ' + error.message;
             }
         }
 
