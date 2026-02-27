@@ -1,17 +1,26 @@
 <?php
-header("Content-Type: application/json");
+// Allow CORS - Tambahkan ini di PALING ATAS
 header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+// Handle preflight request (OPTIONS)
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+header("Content-Type: application/json");
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 mysqli_report(MYSQLI_REPORT_OFF);
 
 // === KONFIGURASI DATABASE ===
-
 $servername = "localhost"; 
-$username   = "underwat_fauzan";   // ← PERBAIKI
+$username   = "underwat_fauzan";
 $password   = "qbHekFNGTMxkvdNMLHkq"; 
-$dbname     = "underwat_fauzan";   // ← PERBAIKI
+$dbname     = "underwat_fauzan";
 
 // === KONEKSI DATABASE ===
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -61,7 +70,9 @@ if (isset($_GET['kualitas_air']) && isset($_GET['tahan']) && isset($_GET['daya_l
     $result = $conn->query($sql);
 
     if ($result && $result->num_rows > 0) {
-        echo json_encode($result->fetch_assoc());
+        $data = $result->fetch_assoc();
+        // Pastikan selalu mengembalikan JSON dengan format yang konsisten
+        echo json_encode($data);
     } else {
         echo json_encode(["status" => "empty", "message" => "No data found"]);
     }
@@ -146,6 +157,19 @@ if (isset($_GET['kualitas_air']) && isset($_GET['tahan']) && isset($_GET['daya_l
     echo json_encode(["status" => "success", "data" => $rows]);
 
 // ============================================================
+// ENDPOINT 5: CEK KONEKSI DATABASE
+// Contoh: api.php?test=true
+// ============================================================
+} elseif (isset($_GET['test'])) {
+    
+    echo json_encode([
+        "status" => "success",
+        "message" => "API is working",
+        "database" => "connected",
+        "timestamp" => date("Y-m-d H:i:s")
+    ]);
+
+// ============================================================
 // DEFAULT: Tampilkan daftar endpoint yang tersedia
 // ============================================================
 } else {
@@ -156,7 +180,8 @@ if (isset($_GET['kualitas_air']) && isset($_GET['tahan']) && isset($_GET['daya_l
             "INSERT data drone" => "api.php?kualitas_air=7.2&tahan=312&daya_listrik=100",
             "GET latest data"   => "api.php?get_latest=true",
             "GET reports"       => "api.php?get_reports=true&period=daily|weekly|monthly",
-            "GET history chart" => "api.php?get_history=true&limit=20"
+            "GET history chart" => "api.php?get_history=true&limit=20",
+            "TEST connection"    => "api.php?test=true"
         ]
     ]);
 }
